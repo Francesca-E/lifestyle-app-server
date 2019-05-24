@@ -1,0 +1,168 @@
+const express= require('express')
+const bodyParser=require('body-parser')
+const bcrypt = require('bcrypt-nodejs');
+const cors=require('cors')
+const knex = require('knex')
+const app=express();
+
+
+app.use(bodyParser.json())
+app.use(cors())
+
+
+
+const db=knex({
+  client: 'pg',
+  connection: {
+    host : '127.0.0.1',
+    user : '',
+    password : '',
+    database :'lifestyledb'
+  }
+});
+
+postgres.select('*').from('users').then(data=>{
+  console.log(data);
+})
+
+const database={
+  users:[
+    {
+      id:'123',
+      name:'Fran',
+      email:'fran@test.com',
+      password:'franpassword',
+      todos:[
+     {id:"1", goal:'Example: Study', content: 'read 20 pages'},
+     {id:"2", goal:'Example: Holiday', content: 'book flights'},
+     {id:"3", goal: 'Example: Holiday', content: 'reseach hotel'},
+     {id:"4", goal: 'Example: Fitness', content: 'go to the gym'},
+     {id:"5", goal: 'Example: Fitness', content: 'play tennis'}],
+    goals:[
+  {
+    id: "1",
+    name: 'Example: Study',
+
+  },
+  {
+    id: "2",
+    name: 'Example: Holiday',
+
+  },
+  {
+    id: "3",
+    name: 'Example: weeks'
+  },
+  {
+    id: "4",
+    name: 'Example: Fitness',
+
+  }
+]
+
+
+    },
+    {
+      id:'456',
+      name:'lizzy',
+      email:'lizzy@test.com',
+      password:'lizzypassword'
+    }
+  ]
+}
+
+
+app.get('/',(req,res)=>{
+  res.send(database.users);
+})
+
+app.post('/signin',(req,res)=>{
+  const{email, name, password}=req.body;
+  // bcrypt.compare(password, function(err, res){})
+    if (req.body.email===database.users[0].email &&
+      password===database.users[0].password )
+        {
+          res.json(database.users[0]);
+        }
+        res.status(400).json('user not in database');
+
+
+})
+
+app.post('/register', (req,res)=>{
+  const{email, name, password}=req.body;
+   // bcrypt.hash(password, null, null, function(err, hash){  })
+  database.users.push({
+    id:'125',
+    name:name,
+    password:password,
+    email:email
+  })
+
+  res.json(database.users);
+
+})
+
+
+app.post('/home', (req,res)=>{
+  const{userID, goalName, goalID}=req.body;
+  database.users[0].goals.unshift({
+    id:goalID,
+    name:goalName,
+  })
+
+  res.json(database.users[0].goals);
+
+})
+
+app.delete('/home', (req,res)=>{
+  const{userID, goalID}=req.body;
+  let filteredGoals=database.users[0].goals.filter(goal=>{
+   return goal.id !== goalID
+  })
+  database.users[0].goals= filteredGoals;
+  res.json(filteredGoals);
+
+})
+
+app.post('/todos', (req,res)=>{
+  const{todoId, todoGoal, todoContent}=req.body;
+  database.users[0].todos.unshift({
+    id:todoId,
+    goal:todoGoal,
+    content:todoContent,
+  })
+
+  res.json(database.users[0].todos);
+
+})
+
+app.delete('/todos', (req,res)=>{
+  const{userID, goalID, todoID}=req.body;
+  let filteredTodos=database.users[0].todos.filter(todo=>{
+   return todo.id !== todoID
+  })
+  database.users[0].todos= filteredTodos;
+  res.json(filteredTodos);
+
+})
+
+// app.get('/home/:id',(req,res)=>{
+//   const{id}=req.params;
+//   let found=false;
+//   database.users.forEach(user=>{
+//     if((user.id)===id){
+//       found=true;
+//       return res.json(user);
+//     }
+//   })
+//   if(!found){
+// res.status(404).json('no user found')}
+// })
+
+
+
+
+app.listen(3000, ()=>{
+  console.log('app is running on port 3000')
+})
